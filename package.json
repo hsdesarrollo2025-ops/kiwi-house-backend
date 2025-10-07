@@ -10,15 +10,15 @@
     "strapi": "strapi"
   },
   "dependencies": {
-    "@strapi/plugin-content-manager": "5.2.3",
-    "@strapi/plugin-content-type-builder": "5.2.3",
-    "@strapi/plugin-email": "5.2.3",
-    "@strapi/plugin-graphql": "5.2.3",
-    "@strapi/plugin-i18n": "5.2.3",
-    "@strapi/plugin-upload": "5.2.3",
-    "@strapi/plugin-users-permissions": "5.2.3",
-    "@strapi/provider-email-sendmail": "5.2.3",
-    "@strapi/strapi": "5.2.3",
+    "@strapi/plugin-content-manager": "5.2.0",
+    "@strapi/plugin-content-type-builder": "5.2.0",
+    "@strapi/plugin-email": "5.2.0",
+    "@strapi/plugin-graphql": "5.2.0",
+    "@strapi/plugin-i18n": "5.2.0",
+    "@strapi/plugin-upload": "5.2.0",
+    "@strapi/plugin-users-permissions": "5.2.0",
+    "@strapi/provider-email-sendmail": "5.2.0",
+    "@strapi/strapi": "5.2.0",
     "pg": "^8.13.0"
   },
   "engines": {
