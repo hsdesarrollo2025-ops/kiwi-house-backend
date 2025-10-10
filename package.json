@@ -5,9 +5,8 @@
   "description": "Backend de Kiwi House construido con Strapi",
   "scripts": {
     "develop": "strapi develop",
-    "start": "strapi build && strapi start",
-    "build": "strapi build",
-    "strapi": "strapi"
+    "start": "strapi start",
+    "build": "strapi build"
   },
   "dependencies": {
     "@strapi/plugin-content-manager": "4.24.5",
