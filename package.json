@@ -19,7 +19,11 @@
     "@strapi/plugin-users-permissions": "4.24.5",
     "@strapi/provider-email-sendmail": "4.24.5",
     "@strapi/strapi": "4.24.5",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^5.3.4",
+    "styled-components": "^5.3.11"
   },
   "engines": {
     "node": "^18.18.0 || ^20.0.0"

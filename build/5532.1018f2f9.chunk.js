@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkkiwi_house_backend=self.webpackChunkkiwi_house_backend||[]).push([[5532],{75532:(i,e,d)=>{d.r(e),d.d(e,{default:()=>n});const n={"plugin.description.long":"Tilf\xF8jer GraphQL endpoint med standard API metoder.","plugin.description.short":"Tilf\xF8jer GraphQL endpoint med standard API metoder.","plugin.name":"GraphQL"}}}]);
