@@ -1,5 +1,5 @@
 {
-  "name": "montri",
+  "name": "montri-backend",
   "private": true,
   "version": "0.1.0",
   "description": "Backend de montri construido con Strapi",
