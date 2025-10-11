@@ -1,8 +1,8 @@
 {
-  "name": "kiwi-house-backend",
+  "name": "montri",
   "private": true,
   "version": "0.1.0",
-  "description": "Backend de Kiwi House construido con Strapi",
+  "description": "Backend de montri construido con Strapi",
   "scripts": {
     "develop": "strapi develop",
     "start": "strapi start",
@@ -30,6 +30,6 @@
   "strapi": {
     "uuid": "2d8f05b0-6a6e-4374-9e41-9dc582f5a3b2"
   },
-  "author": "Kiwi House",
+  "author": "montri",
   "license": "MIT"
 }
