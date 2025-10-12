@@ -29,6 +29,10 @@
       "required": true,
       "unique": true
     },
+    "provider": {
+      "type": "string",
+      "default": "local"
+    },
     "password": {
       "type": "password",
       "minLength": 8,
@@ -62,6 +66,12 @@
     "blocked": {
       "type": "boolean",
       "default": false
+    },
+    "role": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.role",
+      "inversedBy": "users"
     }
   }
 }
