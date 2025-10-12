@@ -1,11 +1,38 @@
 {
+  "collectionName": "users",
+  "info": {
+    "singularName": "user",
+    "pluralName": "users",
+    "displayName": "User",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "users-permissions": {
+      "advanced": {
+        "defaultRole": "authenticated"
+      }
+    }
+  },
   "attributes": {
+    "username": {
+      "type": "string",
+      "minLength": 3,
+      "required": true,
+      "unique": true
+    },
     "email": {
+      "type": "email",
+      "minLength": 6,
       "required": true,
       "unique": true
     },
     "password": {
-      "minLength": 8
+      "type": "password",
+      "minLength": 8,
+      "required": true
     },
     "firstName": {
       "type": "string",
@@ -27,7 +54,14 @@
       "type": "boolean",
       "default": false,
       "required": true
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "blocked": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
-
