@@ -1,0 +1,33 @@
+{
+  "attributes": {
+    "email": {
+      "required": true,
+      "unique": true
+    },
+    "password": {
+      "minLength": 8
+    },
+    "firstName": {
+      "type": "string",
+      "required": true
+    },
+    "lastName": {
+      "type": "string",
+      "required": true
+    },
+    "cuit": {
+      "type": "string"
+    },
+    "planType": {
+      "type": "enumeration",
+      "enum": ["free", "pro", "premium"],
+      "default": "free"
+    },
+    "acceptedTerms": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    }
+  }
+}
+
