@@ -1,4 +1,5 @@
 {
+  "kind": "collectionType",
   "collectionName": "perfils_fiscales",
   "info": {
     "singularName": "perfil-fiscal",
