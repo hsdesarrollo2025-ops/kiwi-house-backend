@@ -2,7 +2,19 @@
 
 const inicializar = async (ctx) => {
   try {
-    const userId = ctx.state.user?.id;
+    // Extraer y verificar JWT manualmente para no depender de policies
+    const auth = ctx.request.header?.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return ctx.unauthorized('Usuario no autenticado.');
+
+    let payload;
+    try {
+      payload = await strapi.plugins['users-permissions'].services.jwt.verify(token);
+    } catch (e) {
+      return ctx.unauthorized('Usuario no autenticado.');
+    }
+
+    const userId = payload?.id;
     if (!userId) return ctx.unauthorized('Usuario no autenticado.');
 
     const existing = await strapi.db
@@ -51,4 +63,3 @@ const inicializar = async (ctx) => {
 };
 
 module.exports = { inicializar };
-
