@@ -18,7 +18,7 @@
     },
     "seccionCompletada": {
       "type": "enumeration",
-      "enum": ["A", "B", "C", null],
+      "enum": ["A", "B", "C"],
       "default": null
     },
     "progreso": { "type": "integer", "default": 0 },
@@ -31,4 +31,3 @@
     "cuit": { "type": "string" }
   }
 }
-
