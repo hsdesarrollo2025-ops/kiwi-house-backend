@@ -170,40 +170,89 @@ module.exports = {
       const userId = await getAuthUserId(ctx);
       if (!userId) return ctx.unauthorized('Usuario no autenticado.');
 
-      const profile = await strapi.db.query('api::fiscal-profile.fiscal-profile').findOne({ where: { user: userId } });
+      const profile = await strapi.db
+        .query('api::fiscal-profile.fiscal-profile')
+        .findOne({ where: { user: userId } });
       if (!profile) return ctx.notFound('No se encontró el perfil fiscal del usuario.');
 
       const data = ctx.request.body || {};
       const errors = [];
 
-      if (!data.category || typeof data.category !== 'string') errors.push('Debe seleccionar una categoría.');
-      const revenueNumber = Number(data.annualRevenue);
-      if (!Number.isFinite(revenueNumber) || revenueNumber < 0) errors.push('La facturación estimada es inválida.');
+      // Validaciones base
+      if (!['Monotributista', 'Responsible Inscripto'].includes(data.regime))
+        errors.push('El régimen fiscal es inválido.');
 
-      // Consulta dinámica a tax-category
-      if (data.category) {
-        const category = await strapi.db.query('api::tax-category.tax-category').findOne({ where: { code: data.category } });
-        if (category && Number(category.grossIncomeLimit) < revenueNumber) {
-          errors.push(`La facturación estimada excede el límite permitido para la categoría ${data.category}.`);
+      if (!data.startDate) errors.push('La fecha de alta es obligatoria.');
+      else if (new Date(data.startDate) > new Date())
+        errors.push('La fecha de alta no puede ser futura.');
+
+      const revenueNumber = Number(data.annualRevenue);
+      if (!Number.isFinite(revenueNumber) || revenueNumber <= 0)
+        errors.push('La facturación anual estimada debe ser mayor que 0.');
+
+      if (!data.mainActivity) errors.push('Debe indicar la actividad principal.');
+      if (!data.activityProvince) errors.push('Debe seleccionar la provincia de actividad.');
+      if (!['Final Consumer', 'Registered Taxpayer', 'Mixed'].includes(data.clientType))
+        errors.push('El tipo de clientes es inválido.');
+      if (data.monthlyOperations != null && Number(data.monthlyOperations) < 0)
+        errors.push('Las operaciones mensuales no pueden ser negativas.');
+
+      // Validaciones específicas por régimen
+      if (data.regime === 'Monotributista') {
+        if (!data.category) {
+          errors.push('Debe seleccionar la categoría fiscal.');
+        } else {
+          const category = await strapi.db
+            .query('api::tax-category.tax-category')
+            .findOne({ where: { code: data.category } });
+
+          if (!category) {
+            errors.push(`La categoría ${data.category} no existe en la tabla AFIP.`);
+          } else {
+            const limit = Number(category.grossIncomeLimit);
+            if (revenueNumber > limit) {
+              errors.push(`La facturación estimada excede el límite permitido para la categoría ${data.category}.`);
+            }
+
+            const maxCategory = await strapi.db
+              .query('api::tax-category.tax-category')
+              .findOne({ where: { code: 'K' } });
+            if (maxCategory && revenueNumber > Number(maxCategory.grossIncomeLimit)) {
+              errors.push('Tu facturación estimada supera el máximo permitido para el Monotributo. Deberías seleccionar Responsable Inscripto.');
+            }
+          }
         }
+      }
+
+      if (data.regime === 'Responsible Inscripto' && data.category) {
+        delete data.category; // No aplica categoría para este régimen
       }
 
       if (errors.length > 0) return ctx.unprocessableEntity({ errores: errors });
 
-      const updated = await strapi.db.query('api::fiscal-profile.fiscal-profile').update({
-        where: { id: profile.id },
-        data: {
-          category: data.category,
-          annualRevenue: revenueNumber,
-          completedSection: 'B',
-          progress: 66,
-          updatedDate: new Date(),
-        },
-      });
+      const updated = await strapi.db
+        .query('api::fiscal-profile.fiscal-profile')
+        .update({
+          where: { id: profile.id },
+          data: {
+            regime: data.regime,
+            startDate: data.startDate,
+            mainActivity: data.mainActivity,
+            activityProvince: data.activityProvince,
+            clientType: data.clientType,
+            monthlyOperations: data.monthlyOperations,
+            hasEmployees: data.hasEmployees,
+            category: data.category,
+            annualRevenue: revenueNumber,
+            completedSection: 'B',
+            progress: 66,
+            updatedDate: new Date(),
+          },
+        });
 
       ctx.send({ message: 'Sección B guardada correctamente.', profile: updated });
     } catch (error) {
-      strapi.log.error('Error al guardar Sección B (fiscal-profile):', error);
+      strapi.log.error('Error al guardar Sección B:', error);
       ctx.internalServerError('Ocurrió un error al guardar la sección.');
     }
   },

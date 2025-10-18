@@ -25,8 +25,15 @@
     "city": { "type": "string" },
     "province": { "type": "string" },
     "postalCode": { "type": "string" },
-    "phone": { "type": "string" }
-    ,
+    "phone": { "type": "string" },
+    "regime": { "type": "enumeration", "enum": ["Monotributista", "Responsible Inscripto"] },
+    "startDate": { "type": "date" },
+    "mainActivity": { "type": "string" },
+    "activityProvince": { "type": "string" },
+    "clientType": { "type": "enumeration", "enum": ["Final Consumer", "Registered Taxpayer", "Mixed"] },
+    "monthlyOperations": { "type": "integer" },
+    "hasEmployees": { "type": "boolean" },
+    
     "category": { "type": "string" },
     "annualRevenue": { "type": "decimal" }
   }
