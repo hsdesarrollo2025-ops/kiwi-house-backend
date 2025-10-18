@@ -15,5 +15,6 @@ module.exports = {
     // Validations
     { method: 'GET', path: '/fiscal-profile/validate-cuit/:cuit', handler: 'fiscal-profile.validateCuit', config: { auth: false } },
     { method: 'GET', path: '/fiscal-profile/validate-category', handler: 'fiscal-profile.validateCategory', config: { auth: false } },
+    { method: 'GET', path: '/fiscal-profile/validate-status', handler: 'fiscal-profile.validateFiscalProfileStatus', config: { auth: false } },
   ],
 };

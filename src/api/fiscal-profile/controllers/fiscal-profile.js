@@ -231,6 +231,49 @@ const updateSectionC = async (ctx) => {
   }
 };
 
+const validateFiscalProfileStatus = async (ctx) => {
+  try {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return ctx.unauthorized('Usuario no autenticado.');
+
+    const profile = await strapi.db
+      .query('api::fiscal-profile.fiscal-profile')
+      .findOne({ where: { user: userId }, select: ['id', 'status', 'completedSection', 'progress'] });
+
+    if (!profile) {
+      return ctx.send({
+        hasProfile: false,
+        message: 'El usuario no tiene un perfil fiscal creado.',
+        status: 'none',
+        completedSection: null,
+        nextSection: 'A',
+      });
+    }
+
+    let nextSection = null;
+    if (profile.status !== 'complete') {
+      if (profile.completedSection === null) nextSection = 'A';
+      else if (profile.completedSection === 'A') nextSection = 'B';
+      else if (profile.completedSection === 'B') nextSection = 'C';
+    }
+
+    ctx.send({
+      hasProfile: true,
+      status: profile.status,
+      completedSection: profile.completedSection,
+      nextSection,
+      progress: profile.progress,
+      message:
+        profile.status === 'complete'
+          ? 'El perfil fiscal está completo.'
+          : `El perfil fiscal está en progreso. Falta completar la sección ${nextSection}.`,
+    });
+  } catch (error) {
+    strapi.log.error('Error al validar estado del perfil fiscal:', error);
+    ctx.internalServerError('Ocurrió un error al validar el estado del perfil fiscal.');
+  }
+};
+
 module.exports = {
   init,
   updateSectionA,
@@ -331,4 +374,5 @@ module.exports = {
   validateCuit,
   validateCategory,
   getFiscalProfile,
+  validateFiscalProfileStatus,
 };
