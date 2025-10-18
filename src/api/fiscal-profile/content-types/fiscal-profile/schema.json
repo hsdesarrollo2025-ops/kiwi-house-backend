@@ -36,5 +36,9 @@
     
     "category": { "type": "string" },
     "annualRevenue": { "type": "decimal" }
+    ,
+    "acceptsAccuracy": { "type": "boolean" },
+    "acceptsTerms": { "type": "boolean" },
+    "notes": { "type": "string" }
   }
 }

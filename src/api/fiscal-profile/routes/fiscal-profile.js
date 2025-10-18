@@ -7,6 +7,7 @@ module.exports = {
     // Section A
     { method: 'PUT', path: '/fiscal-profile/section/A', handler: 'fiscal-profile.updateSectionA', config: { auth: false } },
     { method: 'PUT', path: '/fiscal-profile/section/B', handler: 'fiscal-profile.updateSectionB', config: { auth: false } },
+    { method: 'PUT', path: '/fiscal-profile/section/C', handler: 'fiscal-profile.updateSectionC', config: { auth: false } },
     // Get by user id
     { method: 'GET', path: '/fiscal-profile/:userId', handler: 'fiscal-profile.getByUser', config: { auth: false } },
     // Finalize

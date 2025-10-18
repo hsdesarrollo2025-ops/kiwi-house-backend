@@ -162,9 +162,57 @@ const validateCategory = async (ctx) => {
   ctx.send({ message: 'Validación de categoría no implementada aún.' });
 };
 
+const updateSectionC = async (ctx) => {
+  try {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return ctx.unauthorized('Usuario no autenticado.');
+
+    const profile = await strapi.db
+      .query('api::fiscal-profile.fiscal-profile')
+      .findOne({ where: { user: userId } });
+    if (!profile) return ctx.notFound('No se encontró el perfil fiscal del usuario.');
+
+    const data = ctx.request.body || {};
+    const errors = [];
+
+    if (typeof data.acceptsAccuracy !== 'boolean' || data.acceptsAccuracy === false)
+      errors.push('Debes confirmar que los datos son verídicos.');
+    if (typeof data.acceptsTerms !== 'boolean' || data.acceptsTerms === false)
+      errors.push('Debes aceptar los términos y condiciones.');
+    if (data.notes && data.notes.length > 255)
+      errors.push('El campo de observaciones no puede superar los 255 caracteres.');
+
+    if (errors.length > 0) return ctx.unprocessableEntity({ errores: errors });
+
+    const updated = await strapi.db
+      .query('api::fiscal-profile.fiscal-profile')
+      .update({
+        where: { id: profile.id },
+        data: {
+          acceptsAccuracy: data.acceptsAccuracy,
+          acceptsTerms: data.acceptsTerms,
+          notes: data.notes || null,
+          completedSection: 'C',
+          progress: 100,
+          status: 'complete',
+          updatedDate: new Date(),
+        },
+      });
+
+    ctx.send({
+      message: 'Sección C guardada correctamente. Perfil fiscal completado.',
+      profile: updated,
+    });
+  } catch (error) {
+    strapi.log.error('Error al guardar Sección C:', error);
+    ctx.internalServerError('Ocurrió un error al guardar la sección.');
+  }
+};
+
 module.exports = {
   init,
   updateSectionA,
+  updateSectionC,
   async updateSectionB(ctx) {
     try {
       const userId = await getAuthUserId(ctx);
