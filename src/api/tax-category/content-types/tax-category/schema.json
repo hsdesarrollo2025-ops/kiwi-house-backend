@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tax_categories",
+  "info": {
+    "singularName": "tax-category",
+    "pluralName": "tax-categories",
+    "displayName": "Tax Category"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "code": { "type": "string", "required": true, "unique": true },
+    "grossIncomeLimit": { "type": "decimal", "required": true },
+    "surfaceLimit": { "type": "string" },
+    "electricityLimit": { "type": "string" },
+    "rentLimit": { "type": "decimal" },
+    "maxUnitPrice": { "type": "decimal" },
+    "servicesTax": { "type": "decimal" },
+    "goodsTax": { "type": "decimal" },
+    "sipaContribution": { "type": "decimal" },
+    "healthContribution": { "type": "decimal" },
+    "servicesAmount": { "type": "decimal" },
+    "goodsAmount": { "type": "decimal" }
+  }
+}
+

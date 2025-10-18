@@ -26,6 +26,8 @@
     "province": { "type": "string" },
     "postalCode": { "type": "string" },
     "phone": { "type": "string" }
+    ,
+    "category": { "type": "string" },
+    "annualRevenue": { "type": "decimal" }
   }
 }
-

@@ -165,9 +165,50 @@ const validateCategory = async (ctx) => {
 module.exports = {
   init,
   updateSectionA,
+  async updateSectionB(ctx) {
+    try {
+      const userId = await getAuthUserId(ctx);
+      if (!userId) return ctx.unauthorized('Usuario no autenticado.');
+
+      const profile = await strapi.db.query('api::fiscal-profile.fiscal-profile').findOne({ where: { user: userId } });
+      if (!profile) return ctx.notFound('No se encontró el perfil fiscal del usuario.');
+
+      const data = ctx.request.body || {};
+      const errors = [];
+
+      if (!data.category || typeof data.category !== 'string') errors.push('Debe seleccionar una categoría.');
+      const revenueNumber = Number(data.annualRevenue);
+      if (!Number.isFinite(revenueNumber) || revenueNumber < 0) errors.push('La facturación estimada es inválida.');
+
+      // Consulta dinámica a tax-category
+      if (data.category) {
+        const category = await strapi.db.query('api::tax-category.tax-category').findOne({ where: { code: data.category } });
+        if (category && Number(category.grossIncomeLimit) < revenueNumber) {
+          errors.push(`La facturación estimada excede el límite permitido para la categoría ${data.category}.`);
+        }
+      }
+
+      if (errors.length > 0) return ctx.unprocessableEntity({ errores: errors });
+
+      const updated = await strapi.db.query('api::fiscal-profile.fiscal-profile').update({
+        where: { id: profile.id },
+        data: {
+          category: data.category,
+          annualRevenue: revenueNumber,
+          completedSection: 'B',
+          progress: 66,
+          updatedDate: new Date(),
+        },
+      });
+
+      ctx.send({ message: 'Sección B guardada correctamente.', profile: updated });
+    } catch (error) {
+      strapi.log.error('Error al guardar Sección B (fiscal-profile):', error);
+      ctx.internalServerError('Ocurrió un error al guardar la sección.');
+    }
+  },
   getByUser,
   finalize,
   validateCuit,
   validateCategory,
 };
-
