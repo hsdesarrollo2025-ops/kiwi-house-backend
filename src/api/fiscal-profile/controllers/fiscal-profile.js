@@ -1,0 +1,173 @@
+'use strict';
+
+// Helper to extract and verify JWT using users-permissions service
+async function getAuthUserId(ctx) {
+  const auth = ctx.request.header?.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token) return null;
+  try {
+    const payload = await strapi.plugins['users-permissions'].services.jwt.verify(token);
+    return payload?.id || null;
+  } catch {
+    return null;
+  }
+}
+
+const init = async (ctx) => {
+  try {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return ctx.unauthorized('Usuario no autenticado.');
+
+    const existing = await strapi.db.query('api::fiscal-profile.fiscal-profile').findOne({ where: { user: userId } });
+    if (existing) {
+      return ctx.conflict('El usuario ya tiene un perfil fiscal creado.');
+    }
+
+    const user = await strapi.db.query('plugin::users-permissions.user').findOne({
+      where: { id: userId },
+      select: ['firstName', 'lastName', 'email', 'cuit'],
+    });
+
+    const now = new Date();
+    const profile = await strapi.db.query('api::fiscal-profile.fiscal-profile').create({
+      data: {
+        user: userId,
+        status: 'draft',
+        completedSection: null,
+        progress: 0,
+        autosave: false,
+        createdDate: now,
+        updatedDate: now,
+        firstName: user?.firstName || null,
+        lastName: user?.lastName || null,
+        email: user?.email || null,
+        cuit: user?.cuit || null,
+      },
+    });
+
+    ctx.send({ message: 'Perfil fiscal inicializado correctamente.', profile });
+  } catch (error) {
+    strapi.log.error('Error al inicializar fiscal-profile:', error);
+    ctx.internalServerError('Ocurrió un error al crear el perfil fiscal.');
+  }
+};
+
+const updateSectionA = async (ctx) => {
+  try {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return ctx.unauthorized('Usuario no autenticado.');
+
+    const profile = await strapi.db.query('api::fiscal-profile.fiscal-profile').findOne({ where: { user: userId } });
+    if (!profile) return ctx.notFound('No se encontró el perfil fiscal del usuario.');
+
+    const data = ctx.request.body || {};
+    const errors = [];
+
+    if (!data.firstName || data.firstName.length < 2) errors.push('El nombre debe tener al menos 2 caracteres.');
+    if (!data.lastName || data.lastName.length < 2) errors.push('El apellido debe tener al menos 2 caracteres.');
+    if (!['DNI', 'Pasaporte', 'Otro'].includes(data.documentType)) errors.push('Tipo de documento inválido.');
+    if (!/^[0-9]{7,10}$/.test(data.documentNumber || '')) errors.push('El número de documento debe tener entre 7 y 10 dígitos.');
+    if (!/^[0-9]{11}$/.test(data.cuit || '')) errors.push('El CUIT debe tener 11 dígitos numéricos.');
+
+    const validateCuit = (cuit) => {
+      const nums = cuit.split('').map(Number);
+      const coef = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+      const suma = coef.reduce((acc, val, i) => acc + val * nums[i], 0);
+      const resto = suma % 11;
+      const verificador = resto === 0 ? 0 : resto === 1 ? 9 : 11 - resto;
+      return verificador === nums[10];
+    };
+    if (data.cuit && !validateCuit(data.cuit)) errors.push('El CUIT ingresado no es válido.');
+
+    if (!data.addressStreet) errors.push('El campo domicilioCalle es obligatorio.');
+    if (!data.addressNumber) errors.push('El campo domicilioNumero es obligatorio.');
+    if (!data.city) errors.push('El campo localidad es obligatorio.');
+    if (!data.province) errors.push('Debe seleccionar una provincia.');
+    if (!/^[0-9]{4,5}$/.test(data.postalCode || '')) errors.push('Código postal inválido (4-5 dígitos).');
+    if (!/^[^@]+@[^@]+\.[a-zA-Z]{2,}$/.test(data.email || '')) errors.push('Email con formato inválido.');
+    if (data.phone && !/^[0-9]{8,15}$/.test(data.phone)) errors.push('El teléfono debe tener entre 8 y 15 dígitos.');
+
+    if (errors.length > 0) return ctx.unprocessableEntity({ errores: errors });
+
+    const updated = await strapi.db.query('api::fiscal-profile.fiscal-profile').update({
+      where: { id: profile.id },
+      data: {
+        ...data,
+        completedSection: 'A',
+        progress: 33,
+        updatedDate: new Date(),
+      },
+    });
+
+    ctx.send({ message: 'Sección A guardada correctamente.', profile: updated });
+  } catch (error) {
+    strapi.log.error('Error al guardar Sección A (fiscal-profile):', error);
+    ctx.internalServerError('Ocurrió un error al guardar la sección.');
+  }
+};
+
+const getByUser = async (ctx) => {
+  try {
+    const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) return ctx.unauthorized('Usuario no autenticado.');
+
+    const { userId } = ctx.params;
+    if (String(authUserId) !== String(userId)) return ctx.forbidden('No autorizado.');
+
+    const profile = await strapi.db.query('api::fiscal-profile.fiscal-profile').findOne({ where: { user: userId } });
+    if (!profile) return ctx.notFound('No se encontró el perfil fiscal del usuario.');
+
+    ctx.send({ profile });
+  } catch (error) {
+    strapi.log.error('Error al obtener perfil por usuario:', error);
+    ctx.internalServerError('Ocurrió un error al obtener el perfil.');
+  }
+};
+
+const finalize = async (ctx) => {
+  try {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return ctx.unauthorized('Usuario no autenticado.');
+
+    const profile = await strapi.db.query('api::fiscal-profile.fiscal-profile').findOne({ where: { user: userId } });
+    if (!profile) return ctx.notFound('No se encontró el perfil fiscal del usuario.');
+
+    const updated = await strapi.db.query('api::fiscal-profile.fiscal-profile').update({
+      where: { id: profile.id },
+      data: { status: 'complete', progress: 100, updatedDate: new Date() },
+    });
+    ctx.send({ message: 'Perfil fiscal finalizado correctamente.', profile: updated });
+  } catch (error) {
+    strapi.log.error('Error al finalizar perfil fiscal:', error);
+    ctx.internalServerError('Ocurrió un error al finalizar el perfil.');
+  }
+};
+
+const validateCuit = async (ctx) => {
+  const { cuit } = ctx.params;
+  const valid = /^[0-9]{11}$/.test(cuit || '') && (function () {
+    const nums = cuit.split('').map(Number);
+    const coef = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+    const suma = coef.reduce((acc, val, i) => acc + val * nums[i], 0);
+    const resto = suma % 11;
+    const verificador = resto === 0 ? 0 : resto === 1 ? 9 : 11 - resto;
+    return verificador === nums[10];
+  })();
+  if (!valid) return ctx.badRequest('El CUIT ingresado no es válido.');
+  ctx.send({ message: 'CUIT válido.' });
+};
+
+const validateCategory = async (ctx) => {
+  // Placeholder de validación (falta especificación). Devuelve 200 con mensaje.
+  ctx.send({ message: 'Validación de categoría no implementada aún.' });
+};
+
+module.exports = {
+  init,
+  updateSectionA,
+  getByUser,
+  finalize,
+  validateCuit,
+  validateCategory,
+};
+

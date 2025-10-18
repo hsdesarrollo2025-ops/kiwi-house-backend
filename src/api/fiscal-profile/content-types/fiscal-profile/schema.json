@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "perfils_fiscales",
+  "info": {
+    "singularName": "fiscal-profile",
+    "pluralName": "fiscal-profiles",
+    "displayName": "Fiscal Profile"
+  },
+  "attributes": {
+    "user": { "type": "relation", "relation": "oneToOne", "target": "plugin::users-permissions.user" },
+    "status": { "type": "enumeration", "enum": ["draft", "complete"], "default": "draft" },
+    "completedSection": { "type": "enumeration", "enum": ["A", "B", "C"] },
+    "progress": { "type": "integer", "default": 0 },
+    "autosave": { "type": "boolean", "default": false },
+    "createdDate": { "type": "datetime" },
+    "updatedDate": { "type": "datetime" },
+    "firstName": { "type": "string" },
+    "lastName": { "type": "string" },
+    "email": { "type": "email" },
+    "cuit": { "type": "string" },
+    "documentType": { "type": "enumeration", "enum": ["DNI", "Pasaporte", "Otro"] },
+    "documentNumber": { "type": "string" },
+    "addressStreet": { "type": "string" },
+    "addressNumber": { "type": "string" },
+    "city": { "type": "string" },
+    "province": { "type": "string" },
+    "postalCode": { "type": "string" },
+    "phone": { "type": "string" }
+  }
+}
+
