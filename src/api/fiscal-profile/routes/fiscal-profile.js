@@ -10,6 +10,8 @@ module.exports = {
     { method: 'PUT', path: '/fiscal-profile/section/C', handler: 'fiscal-profile.updateSectionC', config: { auth: false } },
     // Validate status (must be before :userId)
     { method: 'GET', path: '/fiscal-profile/validate-status', handler: 'fiscal-profile.validateFiscalProfileStatus', config: { auth: false } },
+    // Alias to avoid router param conflicts
+    { method: 'GET', path: '/fiscal-profile/status', handler: 'fiscal-profile.validateFiscalProfileStatus', config: { auth: false } },
     // Get by user id
     { method: 'GET', path: '/fiscal-profile/:userId', handler: 'fiscal-profile.getFiscalProfile', config: { auth: false } },
     // Finalize
