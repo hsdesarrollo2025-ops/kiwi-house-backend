@@ -162,6 +162,28 @@ const validateCategory = async (ctx) => {
   ctx.send({ message: 'Validación de categoría no implementada aún.' });
 };
 
+const getFiscalProfile = async (ctx) => {
+  try {
+    const { userId } = ctx.params || {};
+    if (!userId) return ctx.badRequest('Debe especificar el ID de usuario.');
+
+    const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) return ctx.unauthorized('Usuario no autenticado.');
+    if (String(authUserId) !== String(userId)) return ctx.forbidden('No autorizado.');
+
+    const profile = await strapi.db
+      .query('api::fiscal-profile.fiscal-profile')
+      .findOne({ where: { user: userId }, populate: true });
+
+    if (!profile) return ctx.notFound('El usuario no tiene un perfil fiscal creado.');
+
+    ctx.send({ message: 'Perfil fiscal obtenido correctamente.', profile });
+  } catch (error) {
+    strapi.log.error('Error al obtener perfil fiscal:', error);
+    ctx.internalServerError('Ocurrió un error al obtener el perfil fiscal.');
+  }
+};
+
 const updateSectionC = async (ctx) => {
   try {
     const userId = await getAuthUserId(ctx);
@@ -308,4 +330,5 @@ module.exports = {
   finalize,
   validateCuit,
   validateCategory,
+  getFiscalProfile,
 };

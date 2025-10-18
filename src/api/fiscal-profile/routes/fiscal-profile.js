@@ -9,7 +9,7 @@ module.exports = {
     { method: 'PUT', path: '/fiscal-profile/section/B', handler: 'fiscal-profile.updateSectionB', config: { auth: false } },
     { method: 'PUT', path: '/fiscal-profile/section/C', handler: 'fiscal-profile.updateSectionC', config: { auth: false } },
     // Get by user id
-    { method: 'GET', path: '/fiscal-profile/:userId', handler: 'fiscal-profile.getByUser', config: { auth: false } },
+    { method: 'GET', path: '/fiscal-profile/:userId', handler: 'fiscal-profile.getFiscalProfile', config: { auth: false } },
     // Finalize
     { method: 'PUT', path: '/fiscal-profile/finalize', handler: 'fiscal-profile.finalize', config: { auth: false } },
     // Validations
