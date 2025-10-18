@@ -13,7 +13,7 @@ module.exports = {
     // Alias to avoid router param conflicts
     { method: 'GET', path: '/fiscal-profile/status', handler: 'fiscal-profile.validateFiscalProfileStatus', config: { auth: false } },
     // Get by user id
-    { method: 'GET', path: '/fiscal-profile/:userId', handler: 'fiscal-profile.getFiscalProfile', config: { auth: false } },
+    { method: 'GET', path: '/fiscal-profile/:userId(\\d+)', handler: 'fiscal-profile.getFiscalProfile', config: { auth: false } },
     // Finalize
     { method: 'PUT', path: '/fiscal-profile/finalize', handler: 'fiscal-profile.finalize', config: { auth: false } },
     // Validations
